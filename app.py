@@ -4,7 +4,9 @@ import torchvision.transforms as transforms
 from torchvision import models
 from PIL import Image, ImageDraw
 import numpy as np
-from ultralytics import YOLO
+# ✅ Safer import that avoids unnecessary modules like FastSAM
+from ultralytics.models.yolo.model import YOLO
+
 import base64
 
 import streamlit as st
