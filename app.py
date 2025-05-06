@@ -5,7 +5,7 @@ from torchvision import models
 from PIL import Image, ImageDraw
 import numpy as np
 # ✅ Safer import that avoids unnecessary modules like FastSAM
-from ultralytics.models.yolo.model import YOLO
+from ultralytics import YOLO
 
 import base64
 
