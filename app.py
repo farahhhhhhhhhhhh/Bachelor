@@ -112,11 +112,31 @@ if 'user_name' not in st.session_state or st.session_state.user_name == '':
     st.stop()
 
 
-st.title(f"Hello {st.session_state.user_name}, welcome to the HAM10000 Classifier!")
+st.title(f"Hello {st.session_state.user_name}, welcome to Dermavision!")
 
 # Class labels
 class_names_resnet = ['akiec', 'bcc', 'bkl', 'df', 'mel', 'nv', 'vasc']
 class_names_yolo = [ "AKIEC", "BCC", "BKL", "DF", "MEL", "NV", "VASC"]
+
+cancer_info = {
+    'akiec': 'Cancerous (Actinic Keratoses and Intraepithelial Carcinoma)',
+    'bcc': 'Cancerous (Basal Cell Carcinoma)',
+    'bkl': 'Non-cancerous (Benign Keratosis-like Lesions)',
+    'df': 'Non-cancerous (Dermatofibroma)',
+    'mel': 'Cancerous (Melanoma)',
+    'nv': 'Non-cancerous (Melanocytic Nevi)',
+    'vasc': 'Non-cancerous (Vascular lesions)',
+
+    # Uppercase version for YOLO
+    'AKIEC': 'Cancerous (Actinic Keratoses and Intraepithelial Carcinoma)',
+    'BCC': 'Cancerous (Basal Cell Carcinoma)',
+    'BKL': 'Non-cancerous (Benign Keratosis-like Lesions)',
+    'DF': 'Non-cancerous (Dermatofibroma)',
+    'MEL': 'Cancerous (Melanoma)',
+    'NV': 'Non-cancerous (Melanocytic Nevi)',
+    'VASC': 'Non-cancerous (Vascular lesions)',
+}
+
 
 # Load model
 @st.cache_resource
@@ -167,7 +187,9 @@ if uploaded_file is not None:
                     prediction = torch.nn.functional.softmax(output[0], dim=0)
                     predicted_class = class_names_resnet[torch.argmax(prediction)]
                     confidence = torch.max(prediction).item()
-                st.success(f"Predicted: **{predicted_class}** ({confidence:.2%} confidence)")
+                status = cancer_info[predicted_class]
+                st.success(f"Predicted: **{predicted_class.upper()}** ({confidence:.2%} confidence) — *{status}*")
+
 
             elif model_choice == "YOLOv8":
                 temp_image_path = "temp_uploaded_image.jpg"
@@ -184,8 +206,12 @@ if uploaded_file is not None:
                         xyxy = box.xyxy[0].tolist()
                         class_id = int(box.cls[0])
                         confidence = float(box.conf[0])
-                        label = f"{class_names_yolo[class_id]} ({confidence:.2%})"
-                        st.write(f"Detected class index: {class_id}, confidence: {confidence:.2%}")
+                        class_name = class_names_yolo[class_id]
+                        status = cancer_info[class_name]
+                        label = f"{class_name} ({confidence:.2%}) — {status}"
+
+                        st.write(f"Detected: **{class_name}** ({confidence:.2%}) — *{status}*")
+
 
                         draw.rectangle(xyxy, outline="red", width=3)
                         draw.text((xyxy[0], xyxy[1] - 10), label, fill="red")
